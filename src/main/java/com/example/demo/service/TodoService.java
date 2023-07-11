@@ -13,21 +13,7 @@ public class TodoService {
     @Autowired
     TodoRepository repository;
 
-    public String testService(){
-        // TodoEntity생성
-        TodoEntity entity = TodoEntity.builder()
-                .title("My first todo item")
-                .build();
 
-        // TodoEntity저장
-        repository.save(entity);
-
-        // TodoEntity검색
-        TodoEntity todoEntity = repository.findById(entity.getId()).get();
-        return todoEntity.getTitle();
-
-
-    }
 
 
 }

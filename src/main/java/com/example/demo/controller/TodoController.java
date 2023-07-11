@@ -18,13 +18,6 @@ public class TodoController {
     @Autowired
     private TodoService todoService;
 
-    @GetMapping("/test")
-    public ResponseEntity<?> testTodo(){
-        String str = todoService.testService();
-        List<String> list = new ArrayList<>();
-        list.add(str);
-        ResponseDto<String> response = ResponseDto.<String>builder().data(list).build();
-        return ResponseEntity.ok().body(response);
-    }
+
 
 }
