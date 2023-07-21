@@ -3,6 +3,7 @@ package com.example.demo.controller;
 import com.example.demo.dto.ResponseDto;
 import com.example.demo.dto.UserDTO;
 import com.example.demo.model.UserEntity;
+import com.example.demo.security.TokenProvider;
 import com.example.demo.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.coyote.Response;
@@ -21,8 +22,12 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private TokenProvider tokenProvider;
+
     @PostMapping("/signup")
-    public ResponseEntity<?> reggisterUser(@RequestBody UserDTO userDTO){
+    public ResponseEntity<?> registerUser(@RequestBody UserDTO userDTO){
+        System.out.println(userDTO);
         try {
             if (userDTO.getPassword() == null || userDTO == null) {
                 throw new RuntimeException("Invalid Password Value");
@@ -30,7 +35,7 @@ public class UserController {
 
             // 요청을 이용해 저장할 유저 만들기
             UserEntity user = UserEntity.builder()
-                    .id(userDTO.getId())
+                    .username(userDTO.getUsername())
                     .password(userDTO.getPassword())
                     .build();
 
@@ -53,7 +58,7 @@ public class UserController {
 
     }
 
-    @PostMapping("/singin")
+    @PostMapping("/signin")
     public ResponseEntity<?> authenticate(@RequestBody UserDTO userDTO){
         UserEntity user = userService.getByCredentials(
                 userDTO.getUsername(),
@@ -61,9 +66,11 @@ public class UserController {
         );
 
         if(user != null){
+            final String token = tokenProvider.create(user);
             final UserDTO responseUserDTO = UserDTO.builder()
                     .username(user.getUsername())
                     .id(user.getId())
+                    .token(token)
                     .build();
             return ResponseEntity.ok().body(responseUserDTO);
         }else{
