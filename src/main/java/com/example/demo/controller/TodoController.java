@@ -6,6 +6,7 @@ import com.example.demo.service.TodoService;
 import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,9 +21,8 @@ public class TodoController {
     private TodoService todoService;
 
     @PostMapping
-    public ResponseEntity<?> createTodo(@RequestBody TodoDto dto){
+    public ResponseEntity<?> createTodo(@AuthenticationPrincipal String userId, @RequestBody TodoDto dto){
         try{
-            String temporaryUserId = "temporary-user";
 
             // 1.TodoEntity로 변환
             TodoEntity entity = TodoDto.toEntity(dto);
@@ -31,7 +31,7 @@ public class TodoController {
             entity.initalizedEntityIdToNull();
 
             // 3.임시 유저 아이디 설정
-            entity.setUserIdTemp(temporaryUserId);
+            entity.setUserIdTemp(userId);
 
             // 4.서비스를 이용해 엔티티 생성
             List<TodoEntity> entities = todoService.create(entity);
@@ -54,11 +54,10 @@ public class TodoController {
     }
 
     @GetMapping
-    public ResponseEntity<?> retrieveTodoList(){
-        String temporaryUserId = "temporary-user";
+    public ResponseEntity<?> retrieveTodoList(@AuthenticationPrincipal String userId){
 
         // 1.서비스 메서드의 retrieve 메서드를 사용해 Todo리스트를 가져온다.
-        List<TodoEntity> entities = todoService.retrieve(temporaryUserId);
+        List<TodoEntity> entities = todoService.retrieve(userId);
 
         // 2.자바스트림을 이용해 리턴된 엔티티 리스트를 TodoDTO 리스트로 변환한다.
         List<TodoDto> dtos = entities.stream().map(TodoDto::new).collect(Collectors.toList());
@@ -72,15 +71,13 @@ public class TodoController {
     }
 
     @PutMapping
-    public ResponseEntity<?> update(@RequestBody TodoDto dto){
-
-        String temporaryUserId = "temporary-user";
+    public ResponseEntity<?> update(@AuthenticationPrincipal String userId,@RequestBody TodoDto dto){
 
         // 1.dto를 entity로 변환
         TodoEntity entity = TodoDto.toEntity(dto);
 
         // 2.id를 TemporaryUserID로 변환
-        entity.setUserIdTemp(temporaryUserId);
+        entity.setUserIdTemp(userId);
 
         // 3.서비스를 이용해 업데이트
         List<TodoEntity> entities = todoService.update(entity);
@@ -97,15 +94,13 @@ public class TodoController {
     }
 
     @DeleteMapping
-    public ResponseEntity<?> deleteTodo(@RequestBody TodoDto dto){
+    public ResponseEntity<?> deleteTodo(@AuthenticationPrincipal String userId,@RequestBody TodoDto dto){
         try{
-            String temporaryUserId = "temporary-user";
-
             // 1.entity로 변환
             TodoEntity entity = TodoDto.toEntity(dto);
 
             // 2.임시유저 설정
-            entity.setUserIdTemp(temporaryUserId);
+            entity.setUserIdTemp(userId);
 
             // 3.서비스를 이용해 entity삭제
             List<TodoEntity> entities = todoService.delete(entity);
